@@ -30,7 +30,7 @@ export function CalendarView({
   const days = buildMonthGrid(year, month);
   const today = todayString();
   const isWide = useMediaQuery('(min-width: 640px)');
-  const maxVisible = isWide ? 4 : 2;
+  const maxVisible = isWide ? 2 : 1;
 
   return (
     <div className="panel calendar">

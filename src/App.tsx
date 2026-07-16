@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useExercises } from './hooks/useExercises';
 import { useRecords } from './hooks/useRecords';
@@ -11,6 +11,7 @@ import { DayDetailModal } from './components/DayDetailModal';
 import { AddRecordModal } from './components/AddRecordModal';
 import { ExerciseManager } from './components/ExerciseManager';
 import { todayString } from './dateUtils';
+import { calculateStreak } from './streak';
 import type { Exercise } from './types';
 
 export default function App() {
@@ -18,6 +19,7 @@ export default function App() {
   const uid = user?.uid ?? null;
   const { exercises, parts, addExercise, deleteExercise } = useExercises(uid);
   const { byDate, totalsByDate, getSortedRecordsForDate, addRecord, deleteRecord } = useRecords(uid);
+  const streak = useMemo(() => calculateStreak(totalsByDate), [totalsByDate]);
 
   const [activeTab, setActiveTab] = useState<'calendar' | 'exercises'>('calendar');
   const now = new Date();
@@ -64,6 +66,7 @@ export default function App() {
     <div className="app">
       <Header
         userLabel={user.displayName ?? user.email ?? 'ユーザー'}
+        streak={streak}
         activeTab={activeTab}
         onTabChange={setActiveTab}
         onSignOut={signOut}
