@@ -5,6 +5,9 @@ export interface Exercise {
   createdAt: number;
 }
 
+// 'time' の場合、reps には合計秒数を格納する
+export type RecordUnit = 'reps' | 'time';
+
 export interface TrainingRecord {
   id: string;
   date: string; // YYYY-MM-DD
@@ -12,5 +15,6 @@ export interface TrainingRecord {
   exerciseName: string;
   part: string;
   reps: number;
+  unit: RecordUnit;
   createdAt: number;
 }

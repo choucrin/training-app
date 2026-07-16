@@ -1,10 +1,11 @@
 import type { TrainingRecord } from './types';
 import { formatDateJP } from './dateUtils';
+import { formatRecordValue } from './recordFormat';
 
 export function buildExportText(dateStr: string, records: TrainingRecord[]): string {
   const lines = [formatDateJP(dateStr)];
   for (const r of records) {
-    lines.push(`・${r.exerciseName}(${r.part}) ${r.reps}`);
+    lines.push(`・${r.exerciseName}(${r.part}) ${formatRecordValue(r.reps, r.unit)}`);
   }
   return lines.join('\n');
 }

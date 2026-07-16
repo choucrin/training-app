@@ -12,7 +12,7 @@ import { AddRecordModal } from './components/AddRecordModal';
 import { ExerciseManager } from './components/ExerciseManager';
 import { todayString } from './dateUtils';
 import { calculateStreak } from './streak';
-import type { Exercise } from './types';
+import type { Exercise, RecordUnit } from './types';
 
 export default function App() {
   const { user, loading, signIn, signOut } = useAuth();
@@ -40,13 +40,19 @@ export default function App() {
     setMonth(d.getMonth());
   }
 
-  async function handleAddRecord(input: { date: string; exercise: Exercise; reps: number }) {
+  async function handleAddRecord(input: {
+    date: string;
+    exercise: Exercise;
+    reps: number;
+    unit: RecordUnit;
+  }) {
     await addRecord({
       date: input.date,
       exerciseId: input.exercise.id,
       exerciseName: input.exercise.name,
       part: input.exercise.part,
       reps: input.reps,
+      unit: input.unit,
     });
   }
 

@@ -1,18 +1,21 @@
 import { useState } from 'react';
 import { Modal } from './Modal';
-import type { Exercise } from '../types';
+import type { Exercise, RecordUnit } from '../types';
 
 interface Props {
   date: string;
   exercises: Exercise[];
   onClose: () => void;
-  onSubmit: (input: { date: string; exercise: Exercise; reps: number }) => Promise<void>;
+  onSubmit: (input: { date: string; exercise: Exercise; reps: number; unit: RecordUnit }) => Promise<void>;
 }
 
 export function AddRecordModal({ date, exercises, onClose, onSubmit }: Props) {
   const [selectedDate, setSelectedDate] = useState(date);
   const [exerciseId, setExerciseId] = useState(exercises[0]?.id ?? '');
+  const [unit, setUnit] = useState<RecordUnit>('reps');
   const [reps, setReps] = useState('');
+  const [minutes, setMinutes] = useState('');
+  const [seconds, setSeconds] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const groupedByPart = new Map<string, Exercise[]>();
@@ -25,11 +28,19 @@ export function AddRecordModal({ date, exercises, onClose, onSubmit }: Props) {
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const exercise = exercises.find((ex) => ex.id === exerciseId);
-    const repsNum = Number(reps);
-    if (!exercise || !repsNum || repsNum <= 0) return;
+    if (!exercise) return;
+
+    let value: number;
+    if (unit === 'time') {
+      value = (Number(minutes) || 0) * 60 + (Number(seconds) || 0);
+    } else {
+      value = Number(reps);
+    }
+    if (!value || value <= 0) return;
+
     setSubmitting(true);
     try {
-      await onSubmit({ date: selectedDate, exercise, reps: repsNum });
+      await onSubmit({ date: selectedDate, exercise, reps: value, unit });
       onClose();
     } finally {
       setSubmitting(false);
@@ -73,17 +84,52 @@ export function AddRecordModal({ date, exercises, onClose, onSubmit }: Props) {
           </select>
         </label>
         <label>
-          回数
-          <input
-            type="number"
-            inputMode="numeric"
-            min={1}
-            value={reps}
-            onChange={(e) => setReps(e.target.value)}
-            placeholder="例: 10"
-            required
-          />
+          入力方法
+          <select value={unit} onChange={(e) => setUnit(e.target.value as RecordUnit)}>
+            <option value="reps">回数</option>
+            <option value="time">時間(分:秒)</option>
+          </select>
         </label>
+        {unit === 'reps' ? (
+          <label>
+            回数
+            <input
+              type="number"
+              inputMode="numeric"
+              min={1}
+              value={reps}
+              onChange={(e) => setReps(e.target.value)}
+              placeholder="例: 10"
+              required
+            />
+          </label>
+        ) : (
+          <label>
+            時間(分:秒)
+            <div className="time-input-row">
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                value={minutes}
+                onChange={(e) => setMinutes(e.target.value)}
+                placeholder="分"
+                aria-label="分"
+              />
+              <span>:</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                min={0}
+                max={59}
+                value={seconds}
+                onChange={(e) => setSeconds(e.target.value)}
+                placeholder="秒"
+                aria-label="秒"
+              />
+            </div>
+          </label>
+        )}
         <button type="submit" className="btn btn-primary" disabled={submitting}>
           追加する
         </button>

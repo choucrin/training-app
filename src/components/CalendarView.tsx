@@ -67,12 +67,14 @@ export function CalendarView({
           const total = totalsByDate.get(dateStr) ?? 0;
           const level = getIntensityLevel(total);
           const isToday = dateStr === today;
-          // 回数が多い順に並べ、枠に入りきらない分は「+N」で丸める
-          const dayRecords = (byDate.get(dateStr) ?? [])
-            .slice()
-            .sort((a, b) => b.reps - a.reps);
-          const visibleRecords = dayRecords.slice(0, maxVisible);
-          const hiddenCount = dayRecords.length - visibleRecords.length;
+          // 部位ごとに回数を集計し、回数が多い順に並べる。入りきらない分は「+N」で丸める
+          const partTotals = new Map<string, number>();
+          for (const r of byDate.get(dateStr) ?? []) {
+            partTotals.set(r.part, (partTotals.get(r.part) ?? 0) + r.reps);
+          }
+          const sortedParts = Array.from(partTotals.entries()).sort((a, b) => b[1] - a[1]);
+          const visibleParts = sortedParts.slice(0, maxVisible);
+          const hiddenCount = sortedParts.length - visibleParts.length;
           return (
             <div
               key={dateStr}
@@ -95,11 +97,12 @@ export function CalendarView({
                   +
                 </button>
               </div>
-              {visibleRecords.length > 0 && (
+              {total > 0 && <span className="calendar-total">{total}回</span>}
+              {visibleParts.length > 0 && (
                 <ul className="calendar-entries">
-                  {visibleRecords.map((r) => (
-                    <li key={r.id} className="calendar-entry">
-                      {r.exerciseName} {r.reps}
+                  {visibleParts.map(([part, count]) => (
+                    <li key={part} className="calendar-entry">
+                      {part} {count}
                     </li>
                   ))}
                   {hiddenCount > 0 && <li className="calendar-entry-more">+{hiddenCount}</li>}

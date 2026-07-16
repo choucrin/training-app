@@ -28,10 +28,10 @@ export function useRecords(uid: string | null) {
     const q = query(collection(db!, 'users', uid, 'records'), orderBy('createdAt', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setRecords(
-        snapshot.docs.map((d) => ({
-          id: d.id,
-          ...(d.data() as Omit<TrainingRecord, 'id'>),
-        })),
+        snapshot.docs.map((d) => {
+          const data = d.data() as Omit<TrainingRecord, 'id'>;
+          return { ...data, unit: data.unit ?? 'reps', id: d.id };
+        }),
       );
       setLoading(false);
     });
@@ -75,6 +75,7 @@ export function useRecords(uid: string | null) {
     exerciseName: string;
     part: string;
     reps: number;
+    unit: TrainingRecord['unit'];
   }) {
     if (!uid) return;
     // 同じ日付・同じ種目の記録が既にある場合は、新規登録せず回数を加算する

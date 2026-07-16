@@ -3,6 +3,7 @@ import { Modal } from './Modal';
 import type { TrainingRecord } from '../types';
 import { formatDateJP } from '../dateUtils';
 import { buildExportText, copyText } from '../textExport';
+import { formatRecordValue } from '../recordFormat';
 
 interface Props {
   date: string;
@@ -36,7 +37,7 @@ export function DayDetailModal({ date, records, onClose, onAddClick, onDelete }:
                 {r.exerciseName}
                 <span className="record-part">({r.part})</span>
               </span>
-              <span className="record-reps">{r.reps}</span>
+              <span className="record-reps">{formatRecordValue(r.reps, r.unit)}</span>
               <button
                 type="button"
                 className="btn-icon"
