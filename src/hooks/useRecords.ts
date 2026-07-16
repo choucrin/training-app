@@ -13,6 +13,7 @@ import { db } from '../firebase';
 import type { TrainingRecord } from '../types';
 import { getWeekday } from '../dateUtils';
 import { WEEKDAY_PARTS, partOrderIndex } from '../constants';
+import { toEquivalentReps } from '../recordFormat';
 
 export function useRecords(uid: string | null) {
   const [records, setRecords] = useState<TrainingRecord[]>([]);
@@ -49,11 +50,11 @@ export function useRecords(uid: string | null) {
     return map;
   }, [records]);
 
-  // 日付 -> その日の合計回数(カレンダーの色分け用)
+  // 日付 -> その日の合計回数(カレンダーの色分け用)。時間記録は換算回数を用いる
   const totalsByDate = useMemo(() => {
     const map = new Map<string, number>();
     for (const r of records) {
-      map.set(r.date, (map.get(r.date) ?? 0) + r.reps);
+      map.set(r.date, (map.get(r.date) ?? 0) + toEquivalentReps(r.reps, r.unit));
     }
     return map;
   }, [records]);

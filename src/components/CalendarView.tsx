@@ -2,6 +2,7 @@ import { buildMonthGrid, formatDate, isSameMonth, todayString } from '../dateUti
 import { WEEKDAY_LABELS, WEEKDAY_PARTS } from '../constants';
 import { getIntensityLevel } from '../colorScale';
 import { useMediaQuery } from '../hooks/useMediaQuery';
+import { toEquivalentReps } from '../recordFormat';
 import type { TrainingRecord } from '../types';
 
 interface Props {
@@ -51,6 +52,8 @@ export function CalendarView({
         </button>
       </div>
 
+      <p className="calendar-note">※時間(分:秒)記録は30秒=10回として換算して集計しています(30秒未満切り捨て)</p>
+
       <div className="calendar-grid calendar-weekday-row">
         {WEEKDAY_LABELS.map((label, i) => (
           <div key={label} className={`calendar-weekday weekday-${i}`}>
@@ -70,9 +73,11 @@ export function CalendarView({
           // 部位ごとに回数を集計し、回数が多い順に並べる。入りきらない分は「+N」で丸める
           const partTotals = new Map<string, number>();
           for (const r of byDate.get(dateStr) ?? []) {
-            partTotals.set(r.part, (partTotals.get(r.part) ?? 0) + r.reps);
+            partTotals.set(r.part, (partTotals.get(r.part) ?? 0) + toEquivalentReps(r.reps, r.unit));
           }
-          const sortedParts = Array.from(partTotals.entries()).sort((a, b) => b[1] - a[1]);
+          const sortedParts = Array.from(partTotals.entries())
+            .filter(([, count]) => count > 0)
+            .sort((a, b) => b[1] - a[1]);
           const visibleParts = sortedParts.slice(0, maxVisible);
           const hiddenCount = sortedParts.length - visibleParts.length;
           return (

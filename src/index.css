@@ -342,6 +342,14 @@ p { margin: 0; }
   font-size: 16px;
 }
 
+.calendar-note {
+  font-size: 10px;
+  line-height: 1.3;
+  color: var(--text);
+  opacity: 0.75;
+  margin: 0 0 6px;
+}
+
 .calendar-grid {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -376,7 +384,7 @@ p { margin: 0; }
   display: flex;
   flex-direction: column;
   gap: 2px;
-  min-height: 47px;
+  min-height: 41px;
   overflow: hidden;
 }
 
