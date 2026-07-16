@@ -2,7 +2,9 @@ import { useState } from 'react';
 import { useAuth } from './hooks/useAuth';
 import { useExercises } from './hooks/useExercises';
 import { useRecords } from './hooks/useRecords';
+import { isFirebaseConfigured } from './firebase';
 import { LoginScreen } from './components/LoginScreen';
+import { FirebaseSetupNotice } from './components/FirebaseSetupNotice';
 import { Header } from './components/Header';
 import { CalendarView } from './components/CalendarView';
 import { DayDetailModal } from './components/DayDetailModal';
@@ -44,6 +46,10 @@ export default function App() {
       part: input.exercise.part,
       reps: input.reps,
     });
+  }
+
+  if (!isFirebaseConfigured) {
+    return <FirebaseSetupNotice />;
   }
 
   if (loading) {

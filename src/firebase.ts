@@ -20,13 +20,17 @@ const firebaseConfig = {
   appId: import.meta.env.VITE_FIREBASE_APP_ID,
 };
 
-export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
-export const db = getFirestore(app);
+// .env が未設定(値が空)の場合にFirebase SDKが例外で落ちて画面が真っ白になるのを防ぐ
+export const isFirebaseConfigured = Object.values(firebaseConfig).every((v) => !!v);
+
+export const app = isFirebaseConfigured ? initializeApp(firebaseConfig) : null;
+export const auth = app ? getAuth(app) : null;
+export const db = app ? getFirestore(app) : null;
 
 const googleProvider = new GoogleAuthProvider();
 
 export async function signIn(): Promise<void> {
+  if (!auth) return;
   try {
     await signInWithPopup(auth, googleProvider);
   } catch (err) {
@@ -36,14 +40,19 @@ export async function signIn(): Promise<void> {
 }
 
 export function signOutUser(): Promise<void> {
-  return firebaseSignOut(auth);
+  return auth ? firebaseSignOut(auth) : Promise.resolve();
 }
 
 export function subscribeAuth(callback: (user: User | null) => void): () => void {
+  if (!auth) {
+    callback(null);
+    return () => {};
+  }
   return onAuthStateChanged(auth, callback);
 }
 
 export function handleRedirectResult(): Promise<void> {
+  if (!auth) return Promise.resolve();
   return getRedirectResult(auth).then(() => undefined);
 }
 

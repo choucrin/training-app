@@ -24,7 +24,7 @@ export function useRecords(uid: string | null) {
       return;
     }
     setLoading(true);
-    const q = query(collection(db, 'users', uid, 'records'), orderBy('createdAt', 'asc'));
+    const q = query(collection(db!, 'users', uid, 'records'), orderBy('createdAt', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setRecords(
         snapshot.docs.map((d) => ({
@@ -76,7 +76,7 @@ export function useRecords(uid: string | null) {
     reps: number;
   }) {
     if (!uid) return;
-    await addDoc(collection(db, 'users', uid, 'records'), {
+    await addDoc(collection(db!, 'users', uid, 'records'), {
       ...input,
       createdAt: Date.now(),
     });
@@ -84,7 +84,7 @@ export function useRecords(uid: string | null) {
 
   async function deleteRecord(id: string) {
     if (!uid) return;
-    await deleteDoc(doc(db, 'users', uid, 'records', id));
+    await deleteDoc(doc(db!, 'users', uid, 'records', id));
   }
 
   return { records, loading, byDate, totalsByDate, getSortedRecordsForDate, addRecord, deleteRecord };

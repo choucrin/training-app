@@ -24,7 +24,7 @@ export function useExercises(uid: string | null) {
       return;
     }
     setLoading(true);
-    const q = query(collection(db, 'users', uid, 'exercises'), orderBy('createdAt', 'asc'));
+    const q = query(collection(db!, 'users', uid, 'exercises'), orderBy('createdAt', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setExercises(
         snapshot.docs.map((d) => ({
@@ -45,7 +45,7 @@ export function useExercises(uid: string | null) {
 
   async function addExercise(name: string, part: string) {
     if (!uid) return;
-    await addDoc(collection(db, 'users', uid, 'exercises'), {
+    await addDoc(collection(db!, 'users', uid, 'exercises'), {
       name,
       part,
       createdAt: Date.now(),
@@ -55,7 +55,7 @@ export function useExercises(uid: string | null) {
 
   async function deleteExercise(id: string) {
     if (!uid) return;
-    await deleteDoc(doc(db, 'users', uid, 'exercises', id));
+    await deleteDoc(doc(db!, 'users', uid, 'exercises', id));
   }
 
   return { exercises, parts, loading, addExercise, deleteExercise };
