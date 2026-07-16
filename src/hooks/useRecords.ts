@@ -7,6 +7,7 @@ import {
   onSnapshot,
   orderBy,
   query,
+  updateDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
 import type { TrainingRecord } from '../types';
@@ -76,6 +77,14 @@ export function useRecords(uid: string | null) {
     reps: number;
   }) {
     if (!uid) return;
+    // 同じ日付・同じ種目の記録が既にある場合は、新規登録せず回数を加算する
+    const existing = (byDate.get(input.date) ?? []).find((r) => r.exerciseId === input.exerciseId);
+    if (existing) {
+      await updateDoc(doc(db!, 'users', uid, 'records', existing.id), {
+        reps: existing.reps + input.reps,
+      });
+      return;
+    }
     await addDoc(collection(db!, 'users', uid, 'records'), {
       ...input,
       createdAt: Date.now(),
