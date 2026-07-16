@@ -2,10 +2,23 @@
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E%F0%9F%92%AA%3C/text%3E%3C/svg%3E" />
+    <link rel="icon" type="image/png" sizes="32x32" href="./pwa/favicon-32.png" />
+    <link rel="icon" href="./favicon.ico" sizes="any" />
+    <link rel="apple-touch-icon" href="./pwa/apple-touch-icon.png" />
+    <link rel="manifest" href="./manifest.webmanifest" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <meta name="description" content="筋トレの記録・カレンダー管理アプリ" />
     <meta name="theme-color" content="#aa3bff" />
+
+    <!-- iOS でホーム画面に追加した際にアプリらしく表示するための設定 -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="筋トレ記録" />
+
+    <!-- Windows(タイル)向け -->
+    <meta name="msapplication-TileColor" content="#aa3bff" />
+    <meta name="msapplication-TileImage" content="./pwa/icon-192.png" />
+
     <title>筋トレ記録</title>
   </head>
   <body>

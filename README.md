@@ -102,6 +102,7 @@ npm run dev
 - **iPhone / iPad(Safari)**: ポップアップでのGoogleログインがブロックされた場合は、自動的にリダイレクト方式でのログインにフォールバックします。
 - **Windows(Chrome / Edge)**: ポップアップでのログインが標準で利用できます。
 - テキストのコピー機能は `navigator.clipboard` を優先的に使用し、利用できない環境では自動的に代替手段(`execCommand`)にフォールバックします。
+- ホーム画面・デスクトップへの追加に対応しています。iPhone/iPadのSafariでは共有メニューから「ホーム画面に追加」、Windows(Chrome/Edge)ではアドレスバーのインストールアイコンから追加すると、専用アイコンで起動できます。
 
 ## ディレクトリ構成の補足
 
@@ -110,3 +111,4 @@ npm run dev
 - `src/components/`: カレンダー、日次詳細、記録追加、種目管理などのUIコンポーネント
 - `src/constants.ts`: 曜日と部位の対応表などの定数
 - `firestore.rules`: Firestoreセキュリティルール
+- `public/manifest.webmanifest` / `public/pwa/`: ホーム画面・デスクトップ追加用のWebアプリマニフェストとアイコン画像。アイコンの元データは `design/icon-src/` のSVGで、`imagemagick` の `convert` コマンドで書き出しています
