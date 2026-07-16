@@ -1,10 +1,13 @@
 import { buildMonthGrid, formatDate, isSameMonth, todayString } from '../dateUtils';
 import { WEEKDAY_LABELS, WEEKDAY_PARTS } from '../constants';
 import { getIntensityLevel } from '../colorScale';
+import { useMediaQuery } from '../hooks/useMediaQuery';
+import type { TrainingRecord } from '../types';
 
 interface Props {
   year: number;
   month: number; // 0-11
+  byDate: Map<string, TrainingRecord[]>;
   totalsByDate: Map<string, number>;
   onPrevMonth: () => void;
   onNextMonth: () => void;
@@ -16,6 +19,7 @@ interface Props {
 export function CalendarView({
   year,
   month,
+  byDate,
   totalsByDate,
   onPrevMonth,
   onNextMonth,
@@ -25,6 +29,8 @@ export function CalendarView({
 }: Props) {
   const days = buildMonthGrid(year, month);
   const today = todayString();
+  const isWide = useMediaQuery('(min-width: 640px)');
+  const maxVisible = isWide ? 4 : 2;
 
   return (
     <div className="panel calendar">
@@ -61,6 +67,12 @@ export function CalendarView({
           const total = totalsByDate.get(dateStr) ?? 0;
           const level = getIntensityLevel(total);
           const isToday = dateStr === today;
+          // 回数が多い順に並べ、枠に入りきらない分は「+N」で丸める
+          const dayRecords = (byDate.get(dateStr) ?? [])
+            .slice()
+            .sort((a, b) => b.reps - a.reps);
+          const visibleRecords = dayRecords.slice(0, maxVisible);
+          const hiddenCount = dayRecords.length - visibleRecords.length;
           return (
             <div
               key={dateStr}
@@ -83,7 +95,16 @@ export function CalendarView({
                   +
                 </button>
               </div>
-              {total > 0 && <span className="calendar-total">{total}回</span>}
+              {visibleRecords.length > 0 && (
+                <ul className="calendar-entries">
+                  {visibleRecords.map((r) => (
+                    <li key={r.id} className="calendar-entry">
+                      {r.exerciseName} {r.reps}
+                    </li>
+                  ))}
+                  {hiddenCount > 0 && <li className="calendar-entry-more">+{hiddenCount}</li>}
+                </ul>
+              )}
             </div>
           );
         })}

@@ -17,7 +17,7 @@ export default function App() {
   const { user, loading, signIn, signOut } = useAuth();
   const uid = user?.uid ?? null;
   const { exercises, parts, addExercise, deleteExercise } = useExercises(uid);
-  const { totalsByDate, getSortedRecordsForDate, addRecord, deleteRecord } = useRecords(uid);
+  const { byDate, totalsByDate, getSortedRecordsForDate, addRecord, deleteRecord } = useRecords(uid);
 
   const [activeTab, setActiveTab] = useState<'calendar' | 'exercises'>('calendar');
   const now = new Date();
@@ -74,6 +74,7 @@ export default function App() {
           <CalendarView
             year={year}
             month={month}
+            byDate={byDate}
             totalsByDate={totalsByDate}
             onPrevMonth={() => changeMonth(-1)}
             onNextMonth={() => changeMonth(1)}
