@@ -1,22 +1,25 @@
 import { useState } from 'react';
 import { Modal } from './Modal';
-import type { Exercise, RecordUnit } from '../types';
+import type { Exercise } from '../types';
 
 interface Props {
   date: string;
   exercises: Exercise[];
   onClose: () => void;
-  onSubmit: (input: { date: string; exercise: Exercise; reps: number; unit: RecordUnit }) => Promise<void>;
+  onSubmit: (input: { date: string; exercise: Exercise; reps: number }) => Promise<void>;
 }
 
 export function AddRecordModal({ date, exercises, onClose, onSubmit }: Props) {
   const [selectedDate, setSelectedDate] = useState(date);
   const [exerciseId, setExerciseId] = useState(exercises[0]?.id ?? '');
-  const [unit, setUnit] = useState<RecordUnit>('reps');
   const [reps, setReps] = useState('');
   const [minutes, setMinutes] = useState('');
   const [seconds, setSeconds] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const selectedExercise = exercises.find((ex) => ex.id === exerciseId);
+  // 記録方法は選択したトレーニングの登録内容に応じて自動的に切り替わる
+  const unit = selectedExercise?.unit ?? 'reps';
 
   const groupedByPart = new Map<string, Exercise[]>();
   for (const ex of exercises) {
@@ -27,8 +30,7 @@ export function AddRecordModal({ date, exercises, onClose, onSubmit }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const exercise = exercises.find((ex) => ex.id === exerciseId);
-    if (!exercise) return;
+    if (!selectedExercise) return;
 
     let value: number;
     if (unit === 'time') {
@@ -40,7 +42,7 @@ export function AddRecordModal({ date, exercises, onClose, onSubmit }: Props) {
 
     setSubmitting(true);
     try {
-      await onSubmit({ date: selectedDate, exercise, reps: value, unit });
+      await onSubmit({ date: selectedDate, exercise: selectedExercise, reps: value });
       onClose();
     } finally {
       setSubmitting(false);
@@ -81,13 +83,6 @@ export function AddRecordModal({ date, exercises, onClose, onSubmit }: Props) {
                 ))}
               </optgroup>
             ))}
-          </select>
-        </label>
-        <label>
-          入力方法
-          <select value={unit} onChange={(e) => setUnit(e.target.value as RecordUnit)}>
-            <option value="reps">回数</option>
-            <option value="time">時間(分:秒)</option>
           </select>
         </label>
         {unit === 'reps' ? (

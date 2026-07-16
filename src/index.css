@@ -292,6 +292,11 @@ p { margin: 0; }
   align-self: flex-start;
 }
 
+.form-actions {
+  display: flex;
+  gap: 8px;
+}
+
 .time-input-row {
   display: flex;
   align-items: center;
@@ -324,6 +329,12 @@ p { margin: 0; }
   padding: 8px 10px;
   background: var(--bg);
   border-radius: 8px;
+}
+
+.exercise-list-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
 }
 
 /* Calendar */

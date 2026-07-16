@@ -1,12 +1,13 @@
+// 'time' の場合、記録には合計秒数を格納する
+export type RecordUnit = 'reps' | 'time';
+
 export interface Exercise {
   id: string;
   name: string;
   part: string;
+  unit: RecordUnit;
   createdAt: number;
 }
-
-// 'time' の場合、reps には合計秒数を格納する
-export type RecordUnit = 'reps' | 'time';
 
 export interface TrainingRecord {
   id: string;

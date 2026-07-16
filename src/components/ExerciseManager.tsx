@@ -1,22 +1,42 @@
 import { useState } from 'react';
-import type { Exercise } from '../types';
+import type { Exercise, RecordUnit } from '../types';
 
 interface Props {
   exercises: Exercise[];
   parts: string[];
-  onAdd: (name: string, part: string) => Promise<void>;
+  onAdd: (name: string, part: string, unit: RecordUnit) => Promise<void>;
+  onUpdate: (id: string, input: { name: string; part: string; unit: RecordUnit }) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
 
 const NEW_PART_VALUE = '__new__';
 
-export function ExerciseManager({ exercises, parts, onAdd, onDelete }: Props) {
+export function ExerciseManager({ exercises, parts, onAdd, onUpdate, onDelete }: Props) {
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState('');
   const [selectedPart, setSelectedPart] = useState(parts[0] ?? NEW_PART_VALUE);
   const [newPart, setNewPart] = useState('');
+  const [unit, setUnit] = useState<RecordUnit>('reps');
   const [submitting, setSubmitting] = useState(false);
 
   const isNewPart = selectedPart === NEW_PART_VALUE;
+  const isEditing = editingId !== null;
+
+  function resetForm() {
+    setEditingId(null);
+    setName('');
+    setSelectedPart(parts[0] ?? NEW_PART_VALUE);
+    setNewPart('');
+    setUnit('reps');
+  }
+
+  function startEdit(ex: Exercise) {
+    setEditingId(ex.id);
+    setName(ex.name);
+    setSelectedPart(ex.part);
+    setNewPart('');
+    setUnit(ex.unit);
+  }
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -25,9 +45,12 @@ export function ExerciseManager({ exercises, parts, onAdd, onDelete }: Props) {
     if (!trimmedName || !part) return;
     setSubmitting(true);
     try {
-      await onAdd(trimmedName, part);
-      setName('');
-      setNewPart('');
+      if (editingId) {
+        await onUpdate(editingId, { name: trimmedName, part, unit });
+      } else {
+        await onAdd(trimmedName, part, unit);
+      }
+      resetForm();
     } finally {
       setSubmitting(false);
     }
@@ -42,7 +65,7 @@ export function ExerciseManager({ exercises, parts, onAdd, onDelete }: Props) {
 
   return (
     <div className="panel">
-      <h2>トレーニングの登録</h2>
+      <h2>{isEditing ? 'トレーニングを編集' : 'トレーニングの登録'}</h2>
       <form onSubmit={handleSubmit} className="form-grid">
         <label>
           トレーニング名
@@ -77,9 +100,23 @@ export function ExerciseManager({ exercises, parts, onAdd, onDelete }: Props) {
             />
           </label>
         )}
-        <button type="submit" className="btn btn-primary" disabled={submitting}>
-          登録する
-        </button>
+        <label>
+          記録方式
+          <select value={unit} onChange={(e) => setUnit(e.target.value as RecordUnit)}>
+            <option value="reps">回数</option>
+            <option value="time">時間(分:秒)</option>
+          </select>
+        </label>
+        <div className="form-actions">
+          <button type="submit" className="btn btn-primary" disabled={submitting}>
+            {isEditing ? '更新する' : '登録する'}
+          </button>
+          {isEditing && (
+            <button type="button" className="btn" onClick={resetForm}>
+              キャンセル
+            </button>
+          )}
+        </div>
       </form>
 
       <h2>登録済みのトレーニング</h2>
@@ -90,15 +127,28 @@ export function ExerciseManager({ exercises, parts, onAdd, onDelete }: Props) {
           <ul className="exercise-list">
             {list.map((ex) => (
               <li key={ex.id}>
-                <span>{ex.name}</span>
-                <button
-                  type="button"
-                  className="btn-icon"
-                  aria-label={`${ex.name}を削除`}
-                  onClick={() => onDelete(ex.id)}
-                >
-                  ✕
-                </button>
+                <span>
+                  {ex.name}
+                  <span className="record-part">({ex.unit === 'time' ? '時間' : '回数'})</span>
+                </span>
+                <span className="exercise-list-actions">
+                  <button
+                    type="button"
+                    className="btn-icon"
+                    aria-label={`${ex.name}を編集`}
+                    onClick={() => startEdit(ex)}
+                  >
+                    ✎
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-icon"
+                    aria-label={`${ex.name}を削除`}
+                    onClick={() => onDelete(ex.id)}
+                  >
+                    ✕
+                  </button>
+                </span>
               </li>
             ))}
           </ul>

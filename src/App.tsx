@@ -12,12 +12,12 @@ import { AddRecordModal } from './components/AddRecordModal';
 import { ExerciseManager } from './components/ExerciseManager';
 import { todayString } from './dateUtils';
 import { calculateStreak } from './streak';
-import type { Exercise, RecordUnit } from './types';
+import type { Exercise } from './types';
 
 export default function App() {
   const { user, loading, signIn, signOut } = useAuth();
   const uid = user?.uid ?? null;
-  const { exercises, parts, addExercise, deleteExercise } = useExercises(uid);
+  const { exercises, parts, addExercise, updateExercise, deleteExercise } = useExercises(uid);
   const { byDate, totalsByDate, getSortedRecordsForDate, addRecord, deleteRecord } = useRecords(uid);
   const streak = useMemo(() => calculateStreak(totalsByDate), [totalsByDate]);
 
@@ -40,19 +40,14 @@ export default function App() {
     setMonth(d.getMonth());
   }
 
-  async function handleAddRecord(input: {
-    date: string;
-    exercise: Exercise;
-    reps: number;
-    unit: RecordUnit;
-  }) {
+  async function handleAddRecord(input: { date: string; exercise: Exercise; reps: number }) {
     await addRecord({
       date: input.date,
       exerciseId: input.exercise.id,
       exerciseName: input.exercise.name,
       part: input.exercise.part,
       reps: input.reps,
-      unit: input.unit,
+      unit: input.exercise.unit,
     });
   }
 
@@ -96,6 +91,7 @@ export default function App() {
             exercises={exercises}
             parts={parts}
             onAdd={addExercise}
+            onUpdate={updateExercise}
             onDelete={deleteExercise}
           />
         )}

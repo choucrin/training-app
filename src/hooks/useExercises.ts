@@ -8,9 +8,10 @@ import {
   orderBy,
   query,
   serverTimestamp,
+  updateDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
-import type { Exercise } from '../types';
+import type { Exercise, RecordUnit } from '../types';
 import { DEFAULT_PARTS } from '../constants';
 
 export function useExercises(uid: string | null) {
@@ -27,10 +28,10 @@ export function useExercises(uid: string | null) {
     const q = query(collection(db!, 'users', uid, 'exercises'), orderBy('createdAt', 'asc'));
     const unsubscribe = onSnapshot(q, (snapshot) => {
       setExercises(
-        snapshot.docs.map((d) => ({
-          id: d.id,
-          ...(d.data() as Omit<Exercise, 'id'>),
-        })),
+        snapshot.docs.map((d) => {
+          const data = d.data() as Omit<Exercise, 'id'>;
+          return { ...data, unit: data.unit ?? 'reps', id: d.id };
+        }),
       );
       setLoading(false);
     });
@@ -43,13 +44,23 @@ export function useExercises(uid: string | null) {
     return Array.from(set);
   }, [exercises]);
 
-  async function addExercise(name: string, part: string) {
+  async function addExercise(name: string, part: string, unit: RecordUnit) {
     if (!uid) return;
     await addDoc(collection(db!, 'users', uid, 'exercises'), {
       name,
       part,
+      unit,
       createdAt: Date.now(),
       createdAtServer: serverTimestamp(),
+    });
+  }
+
+  async function updateExercise(id: string, input: { name: string; part: string; unit: RecordUnit }) {
+    if (!uid) return;
+    await updateDoc(doc(db!, 'users', uid, 'exercises', id), {
+      name: input.name,
+      part: input.part,
+      unit: input.unit,
     });
   }
 
@@ -58,5 +69,5 @@ export function useExercises(uid: string | null) {
     await deleteDoc(doc(db!, 'users', uid, 'exercises', id));
   }
 
-  return { exercises, parts, loading, addExercise, deleteExercise };
+  return { exercises, parts, loading, addExercise, updateExercise, deleteExercise };
 }
