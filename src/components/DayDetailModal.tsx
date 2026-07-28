@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Modal } from './Modal';
 import type { TrainingRecord } from '../types';
 import { formatDateJP } from '../dateUtils';
@@ -16,13 +16,19 @@ interface Props {
 export function DayDetailModal({ date, records, onClose, onAddClick, onDelete }: Props) {
   const [showText, setShowText] = useState(false);
   const [copyStatus, setCopyStatus] = useState<'idle' | 'success' | 'error'>('idle');
+  const resetTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+
+  useEffect(() => {
+    return () => clearTimeout(resetTimerRef.current);
+  }, []);
 
   const exportText = buildExportText(date, records);
 
   async function handleCopy() {
     const ok = await copyText(exportText);
     setCopyStatus(ok ? 'success' : 'error');
-    setTimeout(() => setCopyStatus('idle'), 2000);
+    clearTimeout(resetTimerRef.current);
+    resetTimerRef.current = setTimeout(() => setCopyStatus('idle'), 2000);
   }
 
   return (

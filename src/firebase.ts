@@ -34,8 +34,13 @@ export async function signIn(): Promise<void> {
   try {
     await signInWithPopup(auth, googleProvider);
   } catch (err) {
+    const code = (err as { code?: string }).code;
+    // ユーザー自身がポップアップを閉じた/連打した場合はリダイレクトせず、そのままログイン画面に戻す
+    if (code === 'auth/popup-closed-by-user' || code === 'auth/cancelled-popup-request') {
+      return;
+    }
     // ポップアップがブロックされる環境(iOS Safari等)ではリダイレクト方式にフォールバック
-    await signInWithRedirect(auth, googleProvider);
+    await signInWithRedirect(auth, googleProvider).catch(() => undefined);
   }
 }
 

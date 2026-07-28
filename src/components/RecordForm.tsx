@@ -17,7 +17,12 @@ export function RecordForm({ initialDate, exercises, submitLabel = '追加する
   const [seconds, setSeconds] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
-  const selectedExercise = exercises.find((ex) => ex.id === exerciseId);
+  // exerciseId は初回マウント時にしか初期化されないため、Firestoreからの種目一覧が
+  // マウント後に届いた場合や、選択中の種目が削除された場合は先頭の種目にフォールバックする
+  const effectiveExerciseId = exercises.some((ex) => ex.id === exerciseId)
+    ? exerciseId
+    : (exercises[0]?.id ?? '');
+  const selectedExercise = exercises.find((ex) => ex.id === effectiveExerciseId);
   // 記録方法は選択したトレーニングの登録内容に応じて自動的に切り替わる
   const unit = selectedExercise?.unit ?? 'reps';
 
@@ -68,7 +73,7 @@ export function RecordForm({ initialDate, exercises, submitLabel = '追加する
       </label>
       <label>
         トレーニング
-        <select value={exerciseId} onChange={(e) => setExerciseId(e.target.value)}>
+        <select value={effectiveExerciseId} onChange={(e) => setExerciseId(e.target.value)}>
           {Array.from(groupedByPart.entries()).map(([part, list]) => (
             <optgroup key={part} label={part}>
               {list.map((ex) => (

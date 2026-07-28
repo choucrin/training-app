@@ -4,6 +4,7 @@ import {
   addDoc,
   deleteDoc,
   doc,
+  increment,
   onSnapshot,
   orderBy,
   query,
@@ -27,15 +28,22 @@ export function useRecords(uid: string | null) {
     }
     setLoading(true);
     const q = query(collection(db!, 'users', uid, 'records'), orderBy('createdAt', 'asc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setRecords(
-        snapshot.docs.map((d) => {
-          const data = d.data() as Omit<TrainingRecord, 'id'>;
-          return { ...data, unit: data.unit ?? 'reps', id: d.id };
-        }),
-      );
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        setRecords(
+          snapshot.docs.map((d) => {
+            const data = d.data() as Omit<TrainingRecord, 'id'>;
+            return { ...data, unit: data.unit ?? 'reps', id: d.id };
+          }),
+        );
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Failed to load records', error);
+        setLoading(false);
+      },
+    );
     return unsubscribe;
   }, [uid]);
 
@@ -65,7 +73,6 @@ export function useRecords(uid: string | null) {
     const primary = assignedPart ? list.filter((r) => r.part === assignedPart) : [];
     const rest = list
       .filter((r) => !(assignedPart && r.part === assignedPart))
-      .slice()
       .sort((a, b) => partOrderIndex(a.part) - partOrderIndex(b.part));
     return [...primary, ...rest];
   }
@@ -79,11 +86,17 @@ export function useRecords(uid: string | null) {
     unit: TrainingRecord['unit'];
   }) {
     if (!uid) return;
-    // 同じ日付・同じ種目の記録が既にある場合は、新規登録せず回数を加算する
-    const existing = (byDate.get(input.date) ?? []).find((r) => r.exerciseId === input.exerciseId);
+    // 同じ日付・同じ種目・同じ記録方式の記録が既にある場合は、新規登録せず回数を加算する。
+    // 記録方式が異なる場合(例: 種目の記録方式を回数→時間に変更した後)は単位が混ざってしまうため
+    // 加算せず別レコードとして登録する
+    const existing = (byDate.get(input.date) ?? []).find(
+      (r) => r.exerciseId === input.exerciseId && r.unit === input.unit,
+    );
     if (existing) {
       await updateDoc(doc(db!, 'users', uid, 'records', existing.id), {
-        reps: existing.reps + input.reps,
+        reps: increment(input.reps),
+        exerciseName: input.exerciseName,
+        part: input.part,
       });
       return;
     }

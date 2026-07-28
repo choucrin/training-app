@@ -86,7 +86,16 @@ export function CalendarView({
               className={`calendar-cell level-${level} ${inMonth ? '' : 'outside-month'} ${
                 isToday ? 'is-today' : ''
               }`}
+              role="button"
+              tabIndex={0}
+              aria-label={`${dateStr}のトレーニングを見る`}
               onClick={() => onSelectDate(dateStr)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  onSelectDate(dateStr);
+                }
+              }}
             >
               <div className="calendar-cell-top">
                 <span className="calendar-date-num">{d.getDate()}</span>

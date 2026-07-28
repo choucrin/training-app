@@ -7,7 +7,6 @@ import {
   onSnapshot,
   orderBy,
   query,
-  serverTimestamp,
   updateDoc,
 } from 'firebase/firestore';
 import { db } from '../firebase';
@@ -26,15 +25,22 @@ export function useExercises(uid: string | null) {
     }
     setLoading(true);
     const q = query(collection(db!, 'users', uid, 'exercises'), orderBy('createdAt', 'asc'));
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setExercises(
-        snapshot.docs.map((d) => {
-          const data = d.data() as Omit<Exercise, 'id'>;
-          return { ...data, unit: data.unit ?? 'reps', id: d.id };
-        }),
-      );
-      setLoading(false);
-    });
+    const unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        setExercises(
+          snapshot.docs.map((d) => {
+            const data = d.data() as Omit<Exercise, 'id'>;
+            return { ...data, unit: data.unit ?? 'reps', id: d.id };
+          }),
+        );
+        setLoading(false);
+      },
+      (error) => {
+        console.error('Failed to load exercises', error);
+        setLoading(false);
+      },
+    );
     return unsubscribe;
   }, [uid]);
 
@@ -51,7 +57,6 @@ export function useExercises(uid: string | null) {
       part,
       unit,
       createdAt: Date.now(),
-      createdAtServer: serverTimestamp(),
     });
   }
 
