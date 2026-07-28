@@ -9,10 +9,11 @@ import { Header } from './components/Header';
 import { CalendarView } from './components/CalendarView';
 import { DayDetailModal } from './components/DayDetailModal';
 import { AddRecordModal } from './components/AddRecordModal';
+import { AddRecordPage } from './components/AddRecordPage';
 import { ExerciseManager } from './components/ExerciseManager';
 import { todayString } from './dateUtils';
 import { calculateStreak } from './streak';
-import type { Exercise } from './types';
+import type { AppTab, Exercise } from './types';
 
 export default function App() {
   const { user, loading, signIn, signOut } = useAuth();
@@ -21,7 +22,7 @@ export default function App() {
   const { byDate, totalsByDate, getSortedRecordsForDate, addRecord, deleteRecord } = useRecords(uid);
   const streak = useMemo(() => calculateStreak(totalsByDate), [totalsByDate]);
 
-  const [activeTab, setActiveTab] = useState<'calendar' | 'exercises'>('calendar');
+  const [activeTab, setActiveTab] = useState<AppTab>('add');
   const now = new Date();
   const [year, setYear] = useState(now.getFullYear());
   const [month, setMonth] = useState(now.getMonth());
@@ -74,7 +75,8 @@ export default function App() {
       />
 
       <main className="app-main">
-        {activeTab === 'calendar' ? (
+        {activeTab === 'add' && <AddRecordPage exercises={exercises} onSubmit={handleAddRecord} />}
+        {activeTab === 'calendar' && (
           <CalendarView
             year={year}
             month={month}
@@ -86,7 +88,8 @@ export default function App() {
             onSelectDate={setSelectedDate}
             onAddForDate={setAddModalDate}
           />
-        ) : (
+        )}
+        {activeTab === 'exercises' && (
           <ExerciseManager
             exercises={exercises}
             parts={parts}

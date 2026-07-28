@@ -1,8 +1,10 @@
+import type { AppTab } from '../types';
+
 interface Props {
   userLabel: string;
   streak: number;
-  activeTab: 'calendar' | 'exercises';
-  onTabChange: (tab: 'calendar' | 'exercises') => void;
+  activeTab: AppTab;
+  onTabChange: (tab: AppTab) => void;
   onSignOut: () => void;
 }
 
@@ -16,6 +18,13 @@ export function Header({ userLabel, streak, activeTab, onTabChange, onSignOut }:
         </span>
       )}
       <nav className="tabs">
+        <button
+          type="button"
+          className={activeTab === 'add' ? 'tab active' : 'tab'}
+          onClick={() => onTabChange('add')}
+        >
+          記録
+        </button>
         <button
           type="button"
           className={activeTab === 'calendar' ? 'tab active' : 'tab'}

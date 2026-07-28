@@ -1,6 +1,8 @@
 // 'time' の場合、記録には合計秒数を格納する
 export type RecordUnit = 'reps' | 'time';
 
+export type AppTab = 'add' | 'calendar' | 'exercises';
+
 export interface Exercise {
   id: string;
   name: string;
